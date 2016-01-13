@@ -70,6 +70,12 @@ loop.panel = (function(_, mozL10n) {
       this.closeWindow();
     },
 
+    handleSignUpClick: function(event) {
+      event.preventDefault();
+      loop.request("SignupToFxA", true);
+      this.closeWindow();
+    },
+
     handleGuestClick: function() {
       loop.request("LogoutFromFxA");
     },
@@ -91,9 +97,14 @@ loop.panel = (function(_, mozL10n) {
           <h1>{line1}</h1>
           <h2>{line2}</h2>
           <div>
+            // TODO review css classes
             <button className="btn btn-info sign-in-request-button"
                     onClick={this.handleSignInClick}>
               {mozL10n.get("sign_in_again_button")}
+            </button>
+            <button className="btn btn-info"
+                    onClick={this.handleSignUpClick}>
+              {mozL10n.get("panel_footer_signup_link")}
             </button>
           </div>
           <a onClick={this.handleGuestClick}>
@@ -336,6 +347,45 @@ loop.panel = (function(_, mozL10n) {
       this.closeWindow();
     },
 
+    handleSignUpLinkClick: function() {
+      loop.request("SignupToFxA");
+      this.closeWindow();
+    },
+
+    handleClick: function(event) {
+      if (event && event.target && event.target.id) {
+        switch (event.target.id) {
+          case "sign-in-link":
+            this.handleSignInLinkClick();
+            break;
+          case "sign-up-link":
+            this.handleSignUpLinkClick();
+            break;
+        }
+      }
+    },
+
+    _getContent: function() {
+      // We use this technique of static markup as it means we get
+      // just one overall string for L10n to define the structure of
+      // the whole item.
+      // XXX: if click events, not really neccesary to use <a> tags ??
+      return { __html: mozL10n.get(
+        "panel_footer_signin_signup_message", {
+          "panel_footer_signin_link": React.renderToStaticMarkup(
+            <a href="#" id="sign-in-link">
+              {mozL10n.get("panel_footer_signin_link")}
+            </a>
+          ),
+          "panel_footer_signup_link": React.renderToStaticMarkup(
+            <a href="#" id="sign-up-link">
+              {mozL10n.get("panel_footer_signup_link")}
+            </a>
+          )
+        })
+      };
+    },
+
     render: function() {
       if (!this.props.fxAEnabled) {
         return null;
@@ -350,10 +400,9 @@ loop.panel = (function(_, mozL10n) {
       }
 
       return (
-        <p className="signin-link">
-          <a href="#" onClick={this.handleSignInLinkClick}>
-            {mozL10n.get("panel_footer_signin_or_signup_link")}
-          </a>
+        <p className="signin-link"
+           dangerouslySetInnerHTML={this._getContent()}
+           onClick={this.handleClick}>
         </p>
       );
     }
@@ -1031,8 +1080,10 @@ loop.panel = (function(_, mozL10n) {
             <RoomList dispatcher={this.props.dispatcher}
               store={this.props.roomStore} />
           <div className="footer">
+            <div className="user-details">
               <AccountLink fxAEnabled={this.state.fxAEnabled}
                            userProfile={this.props.userProfile || this.state.userProfile}/>
+            </div>
             <div className="signin-details">
               <SettingsDropdown />
             </div>

@@ -738,6 +738,28 @@ const kMessageHandlers = {
     reply();
   },
 
+   /**
+   * Start the FxA signup flow using the OAuth client and params from the Loop
+   * server.
+   *
+   * @param {Object}   message Message meant for the handler function, containing
+   *                           the following parameters in its `data` property:
+   *                           [
+   *                             {Boolean} forceReAuth Set to true to force FxA
+   *                                                   into a re-auth even if the
+   *                                                   user is already logged in.
+   *                           ]
+   * @param {Function} reply   Callback function, invoked with the result of this
+   *                           message handler. The result will be sent back to
+   *                           the senders' channel.
+   * @return {Promise} Returns a promise that is resolved on successful
+   *                   completion, or rejected otherwise.
+   */
+  SignupToFxA: function(message, reply) {
+    MozLoopService.signupToFxA();
+    reply();
+  },
+
   /**
    * Logout completely from FxA.
    * @see MozLoopService#logOutFromFxA
