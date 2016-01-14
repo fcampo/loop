@@ -1088,24 +1088,21 @@ var MozLoopServiceInternal = {
    * Get the OAuth client constructed with Loop OAauth parameters.
    *
    * @param {Boolean} forceReAuth Set to true to force the user to reauthenticate.
+   * @param {string}  action Type of the action to execute with the oAuth client
+   *                  Can be 'signin' or 'signup'
    * @return {Promise}
    */
   promiseFxAOAuthClient: Task.async(function* (forceReAuth, action) {
-    log.debug("> CLIENT > getting the client");
     action = (forceReAuth ? "force_auth" : action) || "signin";
-    log.debug("> CLIENT > for ACTION - " + action);
 
     // We must make sure to have only a single client otherwise they will have different states and
     // multiple channels. This would happen if the user clicks the Login button more than once.
     if (gFxAOAuthClientPromises[action]) {
-      log.debug("> CLIENT > there is a previous client, returning");
       return gFxAOAuthClientPromises[action];
     }
 
-    log.debug("> CLIENT > creating NEW");
     gFxAOAuthClientPromises[action] = this.promiseFxAOAuthParameters()
       .then(parameters => {
-        log.debug("> CLIENT > oAuth parameters received - " + JSON.stringify(parameters));
         // Add the fact that we want keys to the parameters.
         parameters.keys = true;
         parameters.action = action;
@@ -1115,26 +1112,21 @@ var MozLoopServiceInternal = {
         }
 
         try {
-          log.debug("> CLIENT > try creating the client with parameters");
           gFxAOAuthClient = new FxAccountsOAuthClient({
             parameters: parameters
           });
         } catch (ex) {
-          log.debug("> CLIENT > error");
           gFxAOAuthClientPromises[action] = null;
           throw ex;
         }
-        log.debug("> CLIENT > finished, returning");
         return gFxAOAuthClient;
       },
       error => {
-        log.debug("> CLIENT > rejected oAuth");
         gFxAOAuthClientPromises[action] = null;
         throw error;
       }
     );
 
-    log.debug("> CLIENT > promise done, returning it");
     return gFxAOAuthClientPromises[action];
   }),
 
@@ -1695,29 +1687,21 @@ this.MozLoopService = {
    * @return {Promise} that resolves when the FxA login flow is complete.
    */
   logInToFxA: function(forceReAuth) {
-    log.debug("> LOGIN");
+    log.debug("logInToFxA");
     gFxAOAuthClientPromises["signin"] = null; // XXX what about signup promise?
 
-    log.debug("> LOGIN > forceReAuth? - " + forceReAuth);
-    log.debug("> LOGIN > fxAOAuthTokenData:", MozLoopServiceInternal.fxAOAuthTokenData);
-
     if (!forceReAuth && MozLoopServiceInternal.fxAOAuthTokenData) {
-      log.debug("> LOGIN > token already set, returning");
       return Promise.resolve(MozLoopServiceInternal.fxAOAuthTokenData);
     }
 
     return MozLoopServiceInternal.promiseFxAOAuthAuthorization(forceReAuth)
       .then(response => {
-        log.debug("> LOGIN > auth promise response");
-        log.debug("> LOGIN > code: " + response.code + ", state: " + response.state);
         return MozLoopServiceInternal.promiseFxAOAuthToken(response.code,
                                                            response.state);
       }).then(tokenData => {
-        log.debug("> LOGIN > received token data - " + tokenData);
         MozLoopServiceInternal.fxAOAuthTokenData = tokenData;
         return MozLoopServiceInternal.promiseRegisteredWithServers(LOOP_SESSION_TYPE.FXA)
           .then(() => {
-            log.debug("> LOGIN > registered with servers");
             MozLoopServiceInternal.clearError("login");
             MozLoopServiceInternal.clearError("profile");
             return MozLoopServiceInternal.fxAOAuthTokenData;
@@ -1726,7 +1710,6 @@ this.MozLoopService = {
         yield MozLoopService.fetchFxAProfile(tokenData);
         return tokenData;
       })).catch(error => {
-        log.debug("> LOGIN > error");
         MozLoopServiceInternal.fxAOAuthTokenData = null;
         MozLoopServiceInternal.fxAOAuthProfile = null;
         MozLoopServiceInternal.deferredRegistrations.delete(LOOP_SESSION_TYPE.FXA);
@@ -1748,10 +1731,9 @@ this.MozLoopService = {
    * @return {Promise} that resolves when the FxA signup flow is complete.
    */
   signupToFxA: function() {
+    log.debug("signupToFxA");
     gFxAOAuthClientPromises["signin"] = null;
     // XXX what about signup promise?
-    log.debug("> SIGNUP > fxAOAuthTokenData:",
-              !!MozLoopServiceInternal.fxAOAuthTokenData);
 
     return MozLoopServiceInternal.promiseFxAOAuthAuthorization(false, "signup")
     .then(response => {
