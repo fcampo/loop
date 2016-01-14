@@ -387,11 +387,14 @@ loop.panel = (function(_, mozL10n) {
     },
 
     render: function() {
+      console.log("--- props: " + JSON.stringify(this.props));
       if (!this.props.fxAEnabled) {
+        console.log("--- NO fxA Enabled");
         return null;
       }
 
       if (this.props.userProfile && this.props.userProfile.email) {
+        console.log("--- user profile");
         return (
           <div className="user-identity">
             {this.props.userProfile.email}
@@ -399,6 +402,8 @@ loop.panel = (function(_, mozL10n) {
         );
       }
 
+      console.log("--- todo OK, devuelve p");
+      console.log("getContent is " + JSON.stringify(this._getContent()));
       return (
         <p className="signin-link"
            dangerouslySetInnerHTML={this._getContent()}

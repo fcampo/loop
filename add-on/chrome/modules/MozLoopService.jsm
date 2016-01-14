@@ -1094,6 +1094,7 @@ var MozLoopServiceInternal = {
     log.debug("> CLIENT > getting the client");
     action = (forceReAuth ? "force_auth" : action) || "signin";
     log.debug("> CLIENT > for ACTION - " + action);
+
     // We must make sure to have only a single client otherwise they will have different states and
     // multiple channels. This would happen if the user clicks the Login button more than once.
     if (gFxAOAuthClientPromises[action]) {
@@ -1102,8 +1103,8 @@ var MozLoopServiceInternal = {
     }
 
     log.debug("> CLIENT > creating NEW");
-    gFxAOAuthClientPromises[action] = this.promiseFxAOAuthParameters().then(
-      parameters => {
+    gFxAOAuthClientPromises[action] = this.promiseFxAOAuthParameters()
+      .then(parameters => {
         log.debug("> CLIENT > oAuth parameters received - " + JSON.stringify(parameters));
         // Add the fact that we want keys to the parameters.
         parameters.keys = true;
@@ -1704,29 +1705,39 @@ this.MozLoopService = {
       log.debug("> LOGIN > token already set, returning");
       return Promise.resolve(MozLoopServiceInternal.fxAOAuthTokenData);
     }
-    return MozLoopServiceInternal.promiseFxAOAuthAuthorization(forceReAuth).then(response => {
-      return MozLoopServiceInternal.promiseFxAOAuthToken(response.code, response.state);
-    }).then(tokenData => {
-      MozLoopServiceInternal.fxAOAuthTokenData = tokenData;
-      return MozLoopServiceInternal.promiseRegisteredWithServers(LOOP_SESSION_TYPE.FXA).then(() => {
-        MozLoopServiceInternal.clearError("login");
-        MozLoopServiceInternal.clearError("profile");
-        return MozLoopServiceInternal.fxAOAuthTokenData;
-      });
-    }).then(Task.async(function* fetchProfile(tokenData) {
-      yield MozLoopService.fetchFxAProfile(tokenData);
-      return tokenData;
-    })).catch(error => {
-      MozLoopServiceInternal.fxAOAuthTokenData = null;
-      MozLoopServiceInternal.fxAOAuthProfile = null;
-      MozLoopServiceInternal.deferredRegistrations.delete(LOOP_SESSION_TYPE.FXA);
-      throw error;
-    }).catch((error) => {
-      MozLoopServiceInternal.setError("login", error,
-                                      () => MozLoopService.logInToFxA());
-      // Re-throw for testing
-      throw error;
-    });
+
+    return MozLoopServiceInternal.promiseFxAOAuthAuthorization(forceReAuth)
+      .then(response => {
+        log.debug("> LOGIN > auth promise response");
+        log.debug("> LOGIN > code: " + response.code + ", state: " + response.state);
+        return MozLoopServiceInternal.promiseFxAOAuthToken(response.code,
+                                                           response.state);
+      }).then(tokenData => {
+        log.debug("> LOGIN > received token data - " + tokenData);
+        MozLoopServiceInternal.fxAOAuthTokenData = tokenData;
+        return MozLoopServiceInternal.promiseRegisteredWithServers(LOOP_SESSION_TYPE.FXA)
+          .then(() => {
+            log.debug("> LOGIN > registered with servers");
+            MozLoopServiceInternal.clearError("login");
+            MozLoopServiceInternal.clearError("profile");
+            return MozLoopServiceInternal.fxAOAuthTokenData;
+          });
+      }).then(Task.async(function* fetchProfile(tokenData) {
+        yield MozLoopService.fetchFxAProfile(tokenData);
+        return tokenData;
+      })).catch(error => {
+        log.debug("> LOGIN > error");
+        MozLoopServiceInternal.fxAOAuthTokenData = null;
+        MozLoopServiceInternal.fxAOAuthProfile = null;
+        MozLoopServiceInternal.deferredRegistrations.delete(LOOP_SESSION_TYPE.FXA);
+        throw error;
+      }).catch((error) => {
+        MozLoopServiceInternal.setError("login", error,
+                                        () => MozLoopService.logInToFxA());
+        // Re-throw for testing
+        throw error;
+      })
+    ;
   },
 
   /**

@@ -139,7 +139,7 @@ describe("loop.panel", function() {
       },
       locale: "en-US"
     });
-    sandbox.stub(document.mozL10n, "get").returns("Fake title");
+
   });
 
   afterEach(function() {
@@ -151,6 +151,7 @@ describe("loop.panel", function() {
   describe("#init", function() {
     beforeEach(function() {
       sandbox.stub(React, "render");
+      sandbox.stub(document.mozL10n, "get").returns("Fake title");
       sandbox.stub(document.mozL10n, "initialize");
     });
 
@@ -186,7 +187,8 @@ describe("loop.panel", function() {
   });
 
   describe("loop.panel.PanelView", function() {
-    var dispatcher, roomStore;
+    var dispatcher,
+        roomStore;
 
     beforeEach(function() {
       dispatcher = new loop.Dispatcher();
@@ -205,28 +207,6 @@ describe("loop.panel", function() {
       );
     }
 
-    function mountTestAccountLink() {
-      return TestUtils.renderIntoDocument(
-        React.createElement(loop.panel.AccountLink, {
-          fxAEnabled: true,
-          userProfile: null
-        })
-      );
-    }
-
-    it("should hide the account entry when FxA is not enabled", function() {
-      LoopMochaUtils.stubLoopRequest({
-        GetUserProfile: function() { return { email: "test@example.com" }; },
-        GetFxAEnabled: function() { return false; }
-      });
-
-      var view = TestUtils.renderIntoDocument(
-        React.createElement(loop.panel.SettingsDropdown));
-
-      expect(view.getDOMNode().querySelectorAll(".entry-settings-account"))
-        .to.have.length.of(0);
-    });
-
     it("should NOT show the context menu on right click", function() {
       var prevent = sandbox.stub();
       var view = createTestPanelView();
@@ -238,6 +218,33 @@ describe("loop.panel", function() {
     });
 
     describe("AccountLink", function() {
+      function mountTestAccountLink(fxaEnabled, userProfile) {
+        return TestUtils.renderIntoDocument(
+          React.createElement(loop.panel.AccountLink, {
+            fxAEnabled: fxaEnabled,
+            userProfile: userProfile
+          })
+        );
+      }
+
+      beforeEach(function() {
+        var signupPanel = React.renderToStaticMarkup(
+          React.createElement("p", {},
+            React.createElement("a", {
+              href: "#",
+              id: "sign-in-link"
+            }, "Sign In"),
+            React.createElement("a", {
+              href: "#",
+              id: "sign-up-link"
+            }, "Sign Up")
+          ));
+
+        sandbox.stub(document.mozL10n, "get")
+          .withArgs("panel_footer_signin_signup_message")
+            .returns(signupPanel);
+      });
+
       it("should trigger the FxA sign in process when clicking the SignIn link",
         function() {
           var stub = sandbox.stub();
@@ -245,12 +252,8 @@ describe("loop.panel", function() {
             LoginToFxA: stub
           });
 
-          var view = mountTestAccountLink();
+          var view = mountTestAccountLink(true, null);
           // Use the first link for the simulation
-          var DOM = view.getDOMNode();
-          console.log("DOM - " + DOM.innerHTML);
-          var links = DOM.querySelectorAll(".signin-link > a");
-          console.log("links - " + links);
           TestUtils.Simulate.click(
             view.getDOMNode().querySelectorAll(".signin-link > a")[0]
           );
@@ -259,7 +262,7 @@ describe("loop.panel", function() {
         });
 
       it("should close the panel after clicking the Sign In link", function() {
-        var view = mountTestAccountLink();
+        var view = mountTestAccountLink(true, null);
 
         TestUtils.Simulate.click(
           view.getDOMNode().querySelectorAll(".signin-link > a")[0]
@@ -275,7 +278,7 @@ describe("loop.panel", function() {
             SignupToFxA: stub
           });
 
-          var view = createTestPanelView();
+          var view = mountTestAccountLink(true, null);
           // Use the first link for the simulation
           TestUtils.Simulate.click(
             view.getDOMNode().querySelectorAll(".signin-link > a")[1]
@@ -285,7 +288,7 @@ describe("loop.panel", function() {
         });
 
       it("should close the panel after clicking the Sign Up link", function() {
-        var view = createTestPanelView();
+        var view = mountTestAccountLink(true, null);
         TestUtils.Simulate.click(
           view.getDOMNode().querySelectorAll(".signin-link > a")[1]
         );
@@ -295,14 +298,11 @@ describe("loop.panel", function() {
 
       it("should be hidden if FxA is not enabled", function() {
         LoopMochaUtils.stubLoopRequest({
+          GetUserProfile: function() { return null; },
           GetFxAEnabled: function() { return false; }
         });
 
-        var view = TestUtils.renderIntoDocument(
-          React.createElement(loop.panel.AccountLink, {
-            fxAEnabled: false,
-            userProfile: null
-          }));
+        var view = mountTestAccountLink(false, null);
 
         expect(view.getDOMNode()).to.be.null;
       });
@@ -311,12 +311,7 @@ describe("loop.panel", function() {
          function() {
           var warnstub = sandbox.stub(console, "warn");
 
-          TestUtils.renderIntoDocument(React.createElement(
-            loop.panel.AccountLink, {
-              fxAEnabled: false,
-              userProfile: []
-            }
-          ));
+          mountTestAccountLink(false, []);
 
           sinon.assert.calledOnce(warnstub);
           sinon.assert.calledWithMatch(warnstub, "Required prop `userProfile` "
@@ -327,12 +322,7 @@ describe("loop.panel", function() {
          function() {
           var warnstub = sandbox.stub(console, "warn");
 
-          TestUtils.renderIntoDocument(React.createElement(
-            loop.panel.AccountLink, {
-              fxAEnabled: false,
-              userProfile: {}
-            }
-          ));
+          mountTestAccountLink(false, {});
 
           sinon.assert.notCalled(warnstub);
       });
@@ -980,6 +970,7 @@ describe("loop.panel", function() {
       });
 
       dispatch = sandbox.stub(dispatcher, "dispatch");
+      sandbox.stub(document.mozL10n, "get").returns("Fake title");
     });
 
     function createTestComponent() {
