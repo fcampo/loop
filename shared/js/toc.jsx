@@ -39,7 +39,15 @@ loop.shared.toc = (function(mozL10n) {
     },
 
     onStoreChange: function() {
+      console.log(">> ToC > updated STORE STATE");
       var newState = this.props.activeRoomStore.getStoreState();
+      console.log(">> ToC >  new state" + JSON.stringify(newState));
+
+      if (newState.newTiles) {
+        console.log(">> ToC > NEW TILES!");
+        this.setState(newState);
+        return;
+      }
       // We haven't decrypted data yet
       if (!newState.roomContextUrls) {
         return;
@@ -52,6 +60,7 @@ loop.shared.toc = (function(mozL10n) {
 
     // XXX akita: add jsdoc
     addTile: function(url) {
+      console.log(">> ToC > adding TILE " + url);
       var tiles = this.state.tiles;
       tiles.push({
         location: url,
@@ -64,18 +73,29 @@ loop.shared.toc = (function(mozL10n) {
     },
 
     render: function() {
+      console.log(">> ToC > render!");
       var cssClasses = classNames({
         "toc-wrapper": true,
         "receiving-screen-share": this.props.isScreenShareActive
       });
 
+      if (this.state.newTiles) {
+        console.log(">> ToC > new tiles detected, showing CRAP");
+        return (
+          <div className="newTilesOnClose">
+            <NewTabsPanel
+              list={this.state.newTiles} />
+          </div>
+        );
+      }
       return (
         <div className={cssClasses}>
           <RoomInfoBarView
             addUrlTile={this.addTile}
             dispatcher={this.props.dispatcher}
-            roomName={this.state.roomName ? this.state.roomName
-              : "BUG: NO NAME SPECIFIED"}
+            roomName={this.state.roomName ?
+              this.state.roomName :
+              "BUG: NO NAME SPECIFIED"}
             roomToken={this.state.roomToken} />
           <RoomContentView
             tiles={this.state.tiles} />
@@ -228,6 +248,35 @@ loop.shared.toc = (function(mozL10n) {
     }
   });
 
+  var NewTabsPanel = React.createClass({
+    propTypes: {
+      list: React.PropTypes.array.isRequired
+    },
+
+    handleClick: function(event) {
+      console.log("> TABS > click on " + JSON.stringify(event.target));
+    },
+
+    render: function() {
+      return (
+        <div className="new-tab-panel">
+          <ul>
+            {
+              this.props.list.map(function(listValue) {
+                return <li>{listValue}</li>;
+              })
+            }
+          </ul>
+          <div className="tab-panel-footer">
+            <button onClick={this.handleClick}>{"Exit"}</button>
+            <button onClick={this.handleClick}>{"Save"}</button>
+            <button onClick={this.handleClick}>{"Save All"}</button>
+          </div>
+        </div>
+      );
+    }
+  });
+
   var AddUrlPanelView = React.createClass({
     propTypes: {
       handleAddUrlClick: React.PropTypes.func.isRequired
@@ -244,7 +293,7 @@ loop.shared.toc = (function(mozL10n) {
         <div className="room-panel-add-url">
           <h2>{'Add a site to the room'}</h2>
           <input placeholder="http://..." ref="siteUrl" type="text" />
-          <button onClick={this.handleClick}>{'Add site'}</button>
+          <button onClick={this.handleClick}>{}</button>
         </div>
       );
     }

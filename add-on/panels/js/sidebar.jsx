@@ -62,6 +62,7 @@ loop.sidebar = (function(mozL10n) {
     },
 
     leaveRoom: function() {
+      console.log(">> SIDEBAR > leaving ROOM");
       this.props.dispatcher.dispatch(new sharedActions.LeaveRoom());
     },
 

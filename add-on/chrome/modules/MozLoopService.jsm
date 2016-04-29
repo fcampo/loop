@@ -907,6 +907,20 @@ var MozLoopServiceInternal = {
     return [...Chat.chatboxes].filter(isLoopURL);
   },
 
+  //////
+  // getUrlFromOpenTabs: function() {
+
+  //   for (var i = 0; i < tabbrowser.browsers.length; ++i) {
+  //     var browser = tabbrowser.getBrowserAtIndex(i);
+  //     var current = browser.currentURI;
+  //     if (!room.links.includes(current)) {
+  //       linksToAdd.push(getMetaData(current));
+  //     }
+  //   }
+
+  //   linksToAdd.showToUser();
+  // },
+
   /**
    * Hangup and close all chat windows that are open.
    */

@@ -1104,9 +1104,39 @@ loop.store.ActiveRoomStore = (function(mozL10n) {
      * @param {sharedActions.LeaveRoom} actionData
      */
     leaveRoom: function(actionData) {
-      this._leaveRoom(ROOM_STATES.ENDED,
-                      false,
-                      actionData && actionData.windowStayingOpen);
+      //
+      console.log(">> ACTIVE ROOM > REQUEST time");
+      loop.request("GetUrlFromOpenTabs").then(function(linkArray) {
+        console.log(">> STORE > URLS?  " + linkArray.length);
+        console.log(">> STORE > URLS > " + JSON.stringify(linkArray));
+        if (linkArray.length) {
+          console.log(">> STORE > adding URLs");
+          this._addTilesToRoom(linkArray);
+          // this.dispatchAction(new sharedActions.AddNewUrlToRoom({
+          //   urls: linkArray
+          // }));
+        }
+
+
+        this._leaveRoom(ROOM_STATES.ENDED,
+                    false,
+                    actionData && actionData.windowStayingOpen);
+      }.bind(this));
+      //
+    },
+
+    _addTilesToRoom: function(newTileUrls) {
+      console.log(">> STORE > ADD TILES > " + newTileUrls.length);
+      var urls = this.getStoreState("roomContextUrls");
+      console.log(">> STORE > current > " + JSON.stringify(urls));
+      urls.push(newTileUrls);
+      console.log(">> STORE > NOW > " + JSON.stringify(urls));
+
+      console.log(">> STORE > update");
+      this.setStoreState({
+        newTiles: urls
+      });
+      console.log(">> STORE > state " + JSON.stringify(this.getStoreState()));
     },
 
     /**
@@ -1155,6 +1185,7 @@ loop.store.ActiveRoomStore = (function(mozL10n) {
      *                                        of the conversation are sent on desktop.
      */
     _leaveRoom: function(nextState, failedJoinRequest, windowStayingOpen) {
+      console.log(">> ACTIVE ROOM > _leave ROOM");
       if (this._storeState.standalone && this._storeState.userAgentHandlesRoom) {
         // If the user agent is handling the room, all we need to do is advance
         // to the next state.

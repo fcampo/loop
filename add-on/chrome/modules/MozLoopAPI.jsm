@@ -708,6 +708,32 @@ const kMessageHandlers = {
     }
     reply(gSocialProviders);
   },
+/////////
+  GetUrlFromOpenTabs: function(message, reply) {
+    MozLoopService.log.debug(">> API > getting URLs from Tabs");
+    let win = Services.wm.getMostRecentWindow("navigator:browser");
+    let tabbrowser = win && win.gBrowser;
+    if (!win || !tabbrowser) {
+      MozLoopService.log.debug(">> error > gBrowser?");
+      reply();
+      return;
+    }
+
+    let linksToAdd = [];
+    for (var i = 0; i < tabbrowser.browsers.length; ++i) {
+      // MozLoopService.log.debug(">> API > checking URL from tab " + i);
+      // MozLoopService.log.debug(">> function ? " + tabbrowser.getBrowserAtIndex);
+      var tab = tabbrowser.getBrowserAtIndex(i);
+      // MozLoopService.log.debug(">> STORE > TAB > " + tab);
+      var tabURL = tab.currentURI.spec;
+      // MozLoopService.log.debug(">> STORE > TAB > URL > " + tabURL);
+      if (tab !== tabbrowser.selectedBrowser) {
+        linksToAdd.push(tabURL);
+      }
+    }
+
+    reply(linksToAdd);
+  },
 
   /**
    * Gets an object with data that represents the currently

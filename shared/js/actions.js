@@ -532,6 +532,13 @@ loop.shared.actions = (function() {
       // windowStayingOpen: Boolean,
     }),
 
+    // /**
+    //  * Used to add new urls to the room tiles.
+    //  */
+    // AddNewUrlToRoom: Action.define("addNewUrlToRoom", {
+    //   urls: Array
+    // }),
+
     /**
      * Signals that the feedback view should be rendered.
      */
