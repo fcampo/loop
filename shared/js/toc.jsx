@@ -18,6 +18,8 @@ loop.shared.toc = (function(mozL10n) {
   // XXX akita: to store mixin
   // XXX akita: make activeRoomStore just handle the A/V connections.
   var TableOfContentView = React.createClass({
+    mixins: [Backbone.Events],
+
     propTypes: {
       activeRoomStore: React.PropTypes.instanceOf(loop.store.ActiveRoomStore).isRequired,
       dispatcher: React.PropTypes.instanceOf(loop.Dispatcher).isRequired,
@@ -29,29 +31,41 @@ loop.shared.toc = (function(mozL10n) {
     },
 
     componentWillMount: function() {
-      this.props.activeRoomStore.on("change", this.onStoreChange);
+      this.listenTo(this.props.activeRoomStore, "change:roomContextUrls",
+                    this._onContextUrlChange);
+      this.listenTo(this.props.activeRoomStore, "change:newTiles",
+                    this._onNewTiles);
       // Force onStoreChange
-      this.onStoreChange();
+      this._onContextUrlChange();
     },
 
-    componentWillUnmount: function() {
-      this.props.activeRoomStore.off("change", this.onStoreChange);
+    // componentWillUnmount: function() {
+    //   console.log(">> TOC > Unmounting :(");
+    //   // this.props.activeRoomStore.off("change", this.onStoreChange);
+    // },
+
+    _onNewTiles: function() {
+      console.log(">> ToC > CHANGE ON possible new TILES!");
+      var tiles = this.props.activeRoomStore.getStoreState("newTiles");
+      if (tiles) {
+        this.setState({
+          askForTiles: tiles
+        });
+        console.log(">> TILES >", tiles);
+        // this.setState(newState);
+        return;
+      }
     },
 
-    onStoreChange: function() {
-      console.log(">> ToC > updated STORE STATE");
+    _onContextUrlChange: function() {
+      console.log(">> ToC > updated Context URL");
       var newState = this.props.activeRoomStore.getStoreState();
       console.log(">> ToC >  new state" + JSON.stringify(newState));
 
-      if (newState.newTiles) {
-        console.log(">> ToC > NEW TILES!");
-        this.setState(newState);
-        return;
-      }
-      // We haven't decrypted data yet
-      if (!newState.roomContextUrls) {
-        return;
-      }
+      // // We haven't decrypted data yet
+      // if (!newState.roomContextUrls) {
+      //   return;
+      // }
 
       var tiles = [newState.roomContextUrls[0]];
       newState.tiles = tiles;
@@ -79,12 +93,12 @@ loop.shared.toc = (function(mozL10n) {
         "receiving-screen-share": this.props.isScreenShareActive
       });
 
-      if (this.state.newTiles) {
-        console.log(">> ToC > new tiles detected, showing CRAP");
+      if (this.state.askForTiles) {
+        console.log(">> ToC > new tiles detected, showing");
         return (
           <div className="newTilesOnClose">
             <NewTabsPanel
-              list={this.state.newTiles} />
+              list={this.state.askForTiles} />
           </div>
         );
       }
@@ -409,6 +423,7 @@ loop.shared.toc = (function(mozL10n) {
 
     componentWillMount: function() {
       this.props.activeRoomStore.on("change", function() {
+        console.log(">> SIDEBAR > change STATE");
         this.setState(this.props.activeRoomStore.getStoreState());
       }, this);
     },

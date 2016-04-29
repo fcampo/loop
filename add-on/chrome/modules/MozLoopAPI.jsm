@@ -708,7 +708,7 @@ const kMessageHandlers = {
     }
     reply(gSocialProviders);
   },
-/////////
+
   GetUrlFromOpenTabs: function(message, reply) {
     MozLoopService.log.debug(">> API > getting URLs from Tabs");
     let win = Services.wm.getMostRecentWindow("navigator:browser");

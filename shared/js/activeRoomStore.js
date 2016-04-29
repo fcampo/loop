@@ -164,7 +164,8 @@ loop.store.ActiveRoomStore = (function(mozL10n) {
         mediaConnected: false,
         // True if a chat message was sent or received during a session.
         // Read more at https://wiki.mozilla.org/Loop/Session.
-        chatMessageExchanged: false
+        chatMessageExchanged: false,
+        newTiles: null
       };
     },
 
@@ -1112,9 +1113,6 @@ loop.store.ActiveRoomStore = (function(mozL10n) {
         if (linkArray.length) {
           console.log(">> STORE > adding URLs");
           this._addTilesToRoom(linkArray);
-          // this.dispatchAction(new sharedActions.AddNewUrlToRoom({
-          //   urls: linkArray
-          // }));
         }
 
 

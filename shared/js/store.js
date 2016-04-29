@@ -52,6 +52,7 @@ loop.store.createStore = (function() {
         this.trigger("change:" + key);
       }
       this.trigger("change");
+      console.log(">> STORE > NEW STATE > ", newState);
     },
 
     /**
