@@ -103,6 +103,50 @@ body.sidebar {
 }
 
 /*------------------------------------*\
+    GUEST PRESENCE
+\*------------------------------------*/
+.room-active-users {
+  display: inline-flex;
+  padding: 5px;
+}
+.room-user {
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  background-color: #333;
+  color: #fff;
+  border-radius: 50%;
+  position: relative;
+  display: inline-block;
+  margin-left: 10px;
+}
+.room-user:hover:after {
+  background: #333;
+  background: rgba(0,0,0,.8);
+  border-radius: 5px;
+  top: 37px;
+  color: #fff;
+  content: attr(data-name);
+  position: absolute;
+  z-index: 98;
+  min-width: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.room-user:hover:before {
+  border: solid;
+  border-color: #333 transparent;
+  border-width: 0 6px 6px;
+  top: 31px;
+  content: "";
+  left: 50%;
+  position: absolute;
+  z-index: 99;
+  transform: translateX(-50%);
+}
+
+/*------------------------------------*\
     MEDIA CONTROL BUTTONS
 \*------------------------------------*/
 

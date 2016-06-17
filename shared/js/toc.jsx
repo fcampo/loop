@@ -27,7 +27,6 @@ loop.shared.toc = (function(mozL10n) {
       dispatcher: React.PropTypes.instanceOf(loop.Dispatcher).isRequired,
       isScreenShareActive: React.PropTypes.bool.isRequired,
       pageStore: React.PropTypes.instanceOf(loop.store.PageStore).isRequired,
-      participantStore: React.PropTypes.instanceOf(loop.store.ParticipantStore).isRequired,
       snackbarStore: React.PropTypes.instanceOf(loop.store.SnackbarStore).isRequired
     },
 
@@ -62,7 +61,6 @@ loop.shared.toc = (function(mozL10n) {
           <RoomInfoBarView
             dispatcher={this.props.dispatcher}
             isDesktop={loop.shared.utils.isDesktop()}
-            participantStore={this.props.participantStore}
             roomName={this.state.roomName ? this.state.roomName
               : "BUG: NO NAME SPECIFIED"}
             roomToken={this.state.roomToken} />
@@ -80,7 +78,6 @@ loop.shared.toc = (function(mozL10n) {
     propTypes: {
       dispatcher: React.PropTypes.instanceOf(loop.Dispatcher).isRequired,
       isDesktop: React.PropTypes.bool.isRequired,
-      participantStore: React.PropTypes.instanceOf(loop.store.ParticipantStore).isRequired,
       roomName: React.PropTypes.string.isRequired,
       roomToken: React.PropTypes.string.isRequired
     },
@@ -115,52 +112,8 @@ loop.shared.toc = (function(mozL10n) {
               label={this.state.roomName}
               onEditionComplete={this.exitEditMode} />
           </div>
-          <RoomPresenceView
-            participantStore={this.props.participantStore} />
           <RoomActionsView
             dispatcher={this.props.dispatcher} />
-        </div>
-      );
-    }
-  });
-
-  var RoomPresenceView = React.createClass({
-    propTypes: {
-      participantStore: React.PropTypes.instanceOf(loop.store.ParticipantStore).isRequired
-    },
-
-    getInitialState() {
-      return this._getOnlineParticipants();
-    },
-
-    _getOnlineParticipants() {
-      return {
-        participants: this.props.participantStore.getOnlineParticipants()
-      };
-    },
-
-    componentWillMount() {
-      this.props.participantStore.on("change", () => {
-        this.setState(this._getOnlineParticipants());
-      }, this);
-    },
-
-    componentWillUnmount() {
-      this.props.participantStore.off("change", null, this);
-    },
-
-    render: function() {
-      return (
-        <div className="room-active-users">
-          {
-            this.state.participants.map(function(participant, index) {
-              return (
-                <div className="room-user" data-name={participant.participantName} key={index}>
-                  <span>{participant.participantName[0].toUpperCase()}</span>
-                </div>
-              );
-            })
-          }
         </div>
       );
     }
@@ -364,6 +317,7 @@ loop.shared.toc = (function(mozL10n) {
       leaveRoom: React.PropTypes.func.isRequired,
       // The poster URLs are for UI-showcase testing and development
       localPosterUrl: React.PropTypes.string,
+      participantStore: React.PropTypes.instanceOf(loop.store.ParticipantStore).isRequired,
       remotePosterUrl: React.PropTypes.string,
       roomState: React.PropTypes.string,
       video: React.PropTypes.object.isRequired
@@ -546,6 +500,7 @@ loop.shared.toc = (function(mozL10n) {
             localSrcMediaElement={this.state.localSrcMediaElement}
             localVideoMuted={this.state.videoMuted}
             matchMedia={this.state.matchMedia || window.matchMedia.bind(window)}
+            participantStore={this.props.participantStore}
             remotePosterUrl={this.props.remotePosterUrl}
             remoteSrcMediaElement={this.state.remoteSrcMediaElement}
             renderRemoteVideo={this.shouldRenderRemoteVideo()}
@@ -615,7 +570,6 @@ loop.shared.toc = (function(mozL10n) {
   return {
     AddUrlPanelView: AddUrlPanelView,
     PageView: PageView,
-    RoomPresenceView: RoomPresenceView,
     SidebarView: SidebarView,
     TableOfContentView: TableOfContentView
   };

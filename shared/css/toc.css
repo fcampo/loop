@@ -93,21 +93,6 @@
   width: 100%;
 }
 
-.toc-wrapper > .toc-room-info-bar > .room-active-users > .room-user,
-.toc-wrapper > .room-toc > .toc-tile > .room-user {
-  width: 30px;
-  height: 30px;
-  line-height: 30px;
-  text-align: center;
-  background-color: #333;
-  color: #fff;
-  border-radius: 50%;
-  position: relative;
-  display: inline-block;
-  margin-left: 10px;
-}
-
-.toc-wrapper > .toc-room-info-bar > .room-active-users > .room-user:hover:after,
 .toc-item > .toc-tile > .tile-wrapper > .tile-footer > .tile-creator:hover:after {
   background: #333;
   background: rgba(0,0,0,.8);
@@ -128,7 +113,6 @@
   top: 28px;
 }
 
-.toc-wrapper > .toc-room-info-bar > .room-active-users > .room-user:hover:before,
 .toc-item > .toc-tile > .tile-wrapper > .tile-footer > .tile-creator:hover:before {
   border: solid;
   border-color: #333 transparent;

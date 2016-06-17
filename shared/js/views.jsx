@@ -869,6 +869,7 @@ loop.shared.views = (function(_, mozL10n) {
       localPosterUrl: React.PropTypes.string,
       localSrcMediaElement: React.PropTypes.object,
       localVideoMuted: React.PropTypes.bool.isRequired,
+      participantStore: React.PropTypes.instanceOf(loop.store.ParticipantStore).isRequired,
       remotePosterUrl: React.PropTypes.string,
       remoteSrcMediaElement: React.PropTypes.object,
       renderRemoteVideo: React.PropTypes.bool.isRequired,
@@ -905,6 +906,8 @@ loop.shared.views = (function(_, mozL10n) {
             mediaType="local"
             posterUrl={this.props.localPosterUrl}
             srcMediaElement={this.props.localSrcMediaElement} />
+          <RoomPresenceView
+            participantStore={this.props.participantStore} />
           <MediaButtonsView
             audio={this.props.audio}
             dispatcher={this.props.dispatcher}
@@ -986,6 +989,48 @@ loop.shared.views = (function(_, mozL10n) {
           <HangUpControlButton
             action={this.props.leaveRoom}
             title={mozL10n.get("rooms_leave_button_label")} />
+        </div>
+      );
+    }
+  });
+
+  var RoomPresenceView = React.createClass({
+    propTypes: {
+      participantStore: React.PropTypes.instanceOf(loop.store.ParticipantStore).isRequired
+    },
+
+    getInitialState() {
+      return this._getOnlineParticipants();
+    },
+
+    _getOnlineParticipants() {
+      return {
+        participants: this.props.participantStore.getOnlineParticipants()
+      };
+    },
+
+    componentWillMount() {
+      this.props.participantStore.on("change", () => {
+        this.setState(this._getOnlineParticipants());
+      }, this);
+    },
+
+    componentWillUnmount() {
+      this.props.participantStore.off("change", null, this);
+    },
+
+    render: function() {
+      return (
+        <div className="room-active-users">
+          {
+            this.state.participants.map(function(participant, index) {
+              return (
+                <div className="room-user" data-name={participant.participantName} key={index}>
+                  <span>{participant.participantName[0].toUpperCase()}</span>
+                </div>
+              );
+            })
+          }
         </div>
       );
     }
@@ -1344,6 +1389,7 @@ loop.shared.views = (function(_, mozL10n) {
     MediaWaitView: MediaWaitView,
     LoadingView: LoadingView,
     RemoteCursorView: RemoteCursorView,
+    RoomPresenceView: RoomPresenceView,
     ScreenShareButton: ScreenShareButton,
     ScreenShareView: ScreenShareView,
     VideoMuteButton: VideoMuteButton
