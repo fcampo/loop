@@ -172,11 +172,13 @@ loop.store.TextChatStore = (function() {
      * @param {sharedActions.SendTextChatMessage} actionData
      */
     sendTextChatMessage: function(actionData) {
+      console.log(">> CHAT > SENDing message > " + JSON.stringify(actionData));
       var messageToSend = Object.assign({}, actionData);
 
       // text chat types get the sender's name added
       if (actionData.contentType === CHAT_CONTENT_TYPES.TEXT) {
         var displayName = this.getStoreState("displayName");
+        console.log("> displayName is " + displayName);
         if (displayName) {
           Object.assign(messageToSend, { displayName: displayName }); // XXX no tst cov
         }
@@ -329,7 +331,9 @@ loop.store.TextChatStore = (function() {
      * @param {sharedActions.SetOwnDisplayName} actionData
      */
     setOwnDisplayName(actionData) {
+      console.log(">> CHAT > change NAME to " + actionData.displayName);
       this.setStoreState({ displayName: actionData.displayName });
+      console.log("> store state: " + JSON.stringify(this.getStoreState()));
     }
   });
 

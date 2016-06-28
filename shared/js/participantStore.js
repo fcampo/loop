@@ -75,6 +75,7 @@ loop.store.ParticipantStore = function() {
      * Handle SetOwnDisplayName action by saving the the current user's name.
      */
     setOwnDisplayName({ displayName }) {
+      console.log(">> PARTICIPANT > change NAME to " + displayName);
       this._currentUserObject.participantName = displayName;
     },
 

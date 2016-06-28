@@ -46,6 +46,7 @@ loop.store.PageStore = function(mozL10n) {
      * Handle SetOwnDisplayName action by saving the current user's name.
      */
     setOwnDisplayName({ displayName }) {
+      console.log(">> PAGES > change NAME to " + displayName);
       this._currentUserName = displayName;
     },
 
